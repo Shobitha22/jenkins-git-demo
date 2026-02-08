@@ -1,26 +1,42 @@
 pipeline {
     agent any
 
+    triggers {
+        pollSCM('* * * * *')
+    }
+
     stages {
-        stage('Build') {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Compile') {
             steps {
                 bat 'javac Hello.java'
             }
         }
 
-        stage('Test') {
+        stage('Run') {
             steps {
                 bat 'java Hello'
+            }
+        }
+
+        stage('Archive') {
+            steps {
+                archiveArtifacts artifacts: '*.class', fingerprint: true
             }
         }
     }
 
     post {
         success {
-            echo 'Build completed successfully'
+            echo 'Mini CI: SUCCESS - artifacts archived'
         }
         failure {
-            echo 'Build failed'
+            echo 'Mini CI: FAILURE - check compilation errors'
         }
     }
 }
